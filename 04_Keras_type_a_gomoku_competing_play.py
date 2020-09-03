@@ -27,6 +27,221 @@ if not os.path.isdir(model_path):
 if not os.path.isdir(graph_path):
     os.mkdir(graph_path)
 
+class Gomoku:
+    def __init__(self):
+        self.n_ticks = n_ticks
+        self.size_chkr_brd = self.n_ticks * self.n_ticks
+        self.WHT_prev_reward = 0
+        self.BLK_prev_reward = 0
+        
+    def reset_env(self):
+        self.checker_board = np.zeros(self.size_chkr_brd, dtype=int)
+
+        return self.checker_board
+        
+    def p1_frame_step(self, p1_action, ep_step):
+
+        self.checker_board[p1_action] = 2
+        p1_next_state = copy.deepcopy(self.checker_board)
+        
+        plt_ck_brd = np.reshape(self.checker_board, (-1, n_ticks))
+        
+        p1_done = False
+        
+        # check the number of 5 stones
+        BLK_stn_5 = 0
+        BLK_patt_5 = np.array([2,2,2,2,2])
+        BLK_stn_4 = 0
+        BLK_patt_4 = np.array([2,2,2,2])
+        BLK_stn_3 = 0
+        BLK_patt_3 = np.array([2,2,2])
+
+        for row_idx in range(n_ticks):
+            arr_x = np.array(plt_ck_brd[row_idx])
+            done_num_5 = sum(1 for k in 
+                      [arr_x[j:j+len(BLK_patt_5)] for j in range(len(arr_x) - len(BLK_patt_5) + 1)]
+                      if np.array_equal(k, BLK_patt_5))
+            BLK_stn_5 += done_num_5
+
+            done_num_4 = sum(1 for k in 
+                      [arr_x[j:j+len(BLK_patt_4)] for j in range(len(arr_x) - len(BLK_patt_4) + 1)]
+                      if np.array_equal(k, BLK_patt_4))
+            BLK_stn_4 += done_num_4
+
+            done_num_3 = sum(1 for k in 
+                      [arr_x[j:j+len(BLK_patt_3)] for j in range(len(arr_x) - len(BLK_patt_3) + 1)]
+                      if np.array_equal(k, BLK_patt_3))
+            BLK_stn_3 += done_num_3
+
+        tp_plt_ck_brd = np.transpose(plt_ck_brd)
+        for col_idx in range(n_ticks):
+            arr_x = np.array(tp_plt_ck_brd[col_idx])
+            done_num_5 = sum(1 for k in 
+                      [arr_x[j:j+len(BLK_patt_5)] for j in range(len(arr_x) - len(BLK_patt_5) + 1)]
+                      if np.array_equal(k, BLK_patt_5))
+            BLK_stn_5 += done_num_5 
+
+            done_num_4 = sum(1 for k in 
+                      [arr_x[j:j+len(BLK_patt_4)] for j in range(len(arr_x) - len(BLK_patt_4) + 1)]
+                      if np.array_equal(k, BLK_patt_4))
+            BLK_stn_4 += done_num_4
+
+            done_num_3 = sum(1 for k in 
+                      [arr_x[j:j+len(BLK_patt_3)] for j in range(len(arr_x) - len(BLK_patt_3) + 1)]
+                      if np.array_equal(k, BLK_patt_3))
+            BLK_stn_3 += done_num_3
+
+        dia_idx = -8
+        while dia_idx < 9:
+            arr_x = np.diag(plt_ck_brd, k=dia_idx)
+            done_num_5 = sum(1 for k in 
+                      [arr_x[j:j+len(BLK_patt_5)] for j in range(len(arr_x) - len(BLK_patt_5) + 1)]
+                      if np.array_equal(k, BLK_patt_5))
+            BLK_stn_5 += done_num_5 
+
+            done_num_4 = sum(1 for k in 
+                      [arr_x[j:j+len(BLK_patt_4)] for j in range(len(arr_x) - len(BLK_patt_4) + 1)]
+                      if np.array_equal(k, BLK_patt_4))
+            BLK_stn_4 += done_num_4
+
+            done_num_3 = sum(1 for k in 
+                      [arr_x[j:j+len(BLK_patt_3)] for j in range(len(arr_x) - len(BLK_patt_3) + 1)]
+                      if np.array_equal(k, BLK_patt_3))
+            BLK_stn_3 += done_num_3
+
+            dia_idx += 1
+
+        flip_dia_idx = -8
+        while flip_dia_idx < 9:
+            arr_x = np.fliplr(plt_ck_brd).diagonal(flip_dia_idx)
+            done_num_5 = sum(1 for k in 
+                      [arr_x[j:j+len(BLK_patt_5)] for j in range(len(arr_x) - len(BLK_patt_5) + 1)]
+                      if np.array_equal(k, BLK_patt_5))
+            BLK_stn_5 += done_num_5 
+
+            done_num_4 = sum(1 for k in 
+                      [arr_x[j:j+len(BLK_patt_4)] for j in range(len(arr_x) - len(BLK_patt_4) + 1)]
+                      if np.array_equal(k, BLK_patt_4))
+            BLK_stn_4 += done_num_4
+
+            done_num_3 = sum(1 for k in 
+                      [arr_x[j:j+len(BLK_patt_3)] for j in range(len(arr_x) - len(BLK_patt_3) + 1)]
+                      if np.array_equal(k, BLK_patt_3))
+            BLK_stn_3 += done_num_3
+
+            flip_dia_idx += 1
+
+        if BLK_stn_5 > 0 or ep_step == size_chkr_brd:
+            p1_done = True
+
+        BLK_ttl_reward = BLK_stn_3*1 + BLK_stn_4*10 + BLK_stn_5*1000
+        p1_reward = 1 + BLK_ttl_reward - self.BLK_prev_reward
+        self.BLK_prev_reward = BLK_ttl_reward
+
+        return p1_next_state, p1_reward, p1_done
+    
+    def p2_frame_step(self, p2_action, ep_step):
+        self.checker_board[p2_action] = 1
+        p2_next_state = copy.deepcopy(self.checker_board)
+        
+        plt_ck_brd = np.reshape(p2_next_state, (-1, n_ticks))
+
+        p2_done = False
+        p1_done = False
+        
+        WHT_stn_5 = 0
+        WHT_patt_5 = np.array([1,1,1,1,1])
+        WHT_stn_4 = 0
+        WHT_patt_4 = np.array([1,1,1,1])
+        WHT_stn_3 = 0
+        WHT_patt_3 = np.array([1,1,1])
+
+        for row_idx in range(n_ticks):
+            arr_x = np.array(plt_ck_brd[row_idx])
+            done_num_5 = sum(1 for k in 
+                      [arr_x[j:j+len(WHT_patt_5)] for j in range(len(arr_x) - len(WHT_patt_5) + 1)]
+                      if np.array_equal(k, WHT_patt_5))
+            WHT_stn_5 += done_num_5
+
+            done_num_4 = sum(1 for k in 
+                      [arr_x[j:j+len(WHT_patt_4)] for j in range(len(arr_x) - len(WHT_patt_4) + 1)]
+                      if np.array_equal(k, WHT_patt_4))
+            WHT_stn_4 += done_num_4
+
+            done_num_3 = sum(1 for k in 
+                      [arr_x[j:j+len(WHT_patt_3)] for j in range(len(arr_x) - len(WHT_patt_3) + 1)]
+                      if np.array_equal(k, WHT_patt_3))
+            WHT_stn_3 += done_num_3
+
+        tp_plt_ck_brd = np.transpose(plt_ck_brd)
+        for col_idx in range(n_ticks):
+            arr_x = np.array(tp_plt_ck_brd[col_idx])
+            done_num_5 = sum(1 for k in 
+                      [arr_x[j:j+len(WHT_patt_5)] for j in range(len(arr_x) - len(WHT_patt_5) + 1)]
+                      if np.array_equal(k, WHT_patt_5))
+            WHT_stn_5 += done_num_5 
+
+            done_num_4 = sum(1 for k in 
+                      [arr_x[j:j+len(WHT_patt_4)] for j in range(len(arr_x) - len(WHT_patt_4) + 1)]
+                      if np.array_equal(k, WHT_patt_4))
+            WHT_stn_4 += done_num_4
+
+            done_num_3 = sum(1 for k in 
+                      [arr_x[j:j+len(WHT_patt_3)] for j in range(len(arr_x) - len(WHT_patt_3) + 1)]
+                      if np.array_equal(k, WHT_patt_3))
+            WHT_stn_3 += done_num_3
+
+        dia_idx = -8
+        while dia_idx < 9:
+            arr_x = np.diag(plt_ck_brd, k=dia_idx)
+            done_num_5 = sum(1 for k in 
+                      [arr_x[j:j+len(WHT_patt_5)] for j in range(len(arr_x) - len(WHT_patt_5) + 1)]
+                      if np.array_equal(k, WHT_patt_5))
+            WHT_stn_5 += done_num_5 
+
+            done_num_4 = sum(1 for k in 
+                      [arr_x[j:j+len(WHT_patt_4)] for j in range(len(arr_x) - len(WHT_patt_4) + 1)]
+                      if np.array_equal(k, WHT_patt_4))
+            WHT_stn_4 += done_num_4
+
+            done_num_3 = sum(1 for k in 
+                      [arr_x[j:j+len(WHT_patt_3)] for j in range(len(arr_x) - len(WHT_patt_3) + 1)]
+                      if np.array_equal(k, WHT_patt_3))
+            WHT_stn_3 += done_num_3
+
+            dia_idx += 1
+
+        flip_dia_idx = -8
+        while flip_dia_idx < 9:
+            arr_x = np.fliplr(plt_ck_brd).diagonal(flip_dia_idx)
+            done_num_5 = sum(1 for k in 
+                      [arr_x[j:j+len(WHT_patt_5)] for j in range(len(arr_x) - len(WHT_patt_5) + 1)]
+                      if np.array_equal(k, WHT_patt_5))
+            WHT_stn_5 += done_num_5 
+
+            done_num_4 = sum(1 for k in 
+                      [arr_x[j:j+len(WHT_patt_4)] for j in range(len(arr_x) - len(WHT_patt_4) + 1)]
+                      if np.array_equal(k, WHT_patt_4))
+            WHT_stn_4 += done_num_4
+
+            done_num_3 = sum(1 for k in 
+                      [arr_x[j:j+len(WHT_patt_3)] for j in range(len(arr_x) - len(WHT_patt_3) + 1)]
+                      if np.array_equal(k, WHT_patt_3))
+            WHT_stn_3 += done_num_3
+
+            flip_dia_idx += 1
+
+        if WHT_stn_5 > 0 :
+            p2_done = True
+            p1_done = True
+
+        WHT_ttl_reward = WHT_stn_3*1 + WHT_stn_4*10 + WHT_stn_5*1000
+
+        p2_reward = 1 + WHT_ttl_reward - self.WHT_prev_reward
+        self.WHT_prev_reward = WHT_ttl_reward
+
+        return p2_next_state, p2_reward, p2_done, p1_done
+
 # it uses Neural Network to approximate q function
 # and replay memory & target q network
 class DQN_p1:
@@ -36,9 +251,6 @@ class DQN_p1:
         self.progress = " "
         self.action_size = action_size
         self.state_size = state_size
-        
-        # train time define
-        self.training_time = 60*60
         
         # These are hyper parameters for the DQN_p1
         self.learning_rate = 0.001
@@ -128,22 +340,13 @@ class DoubleDQN_p2:
         return model
 
     # get action from model using epsilon-greedy policy
-    def get_action(self, state, ep_step):
-        # print("Episode step :",ep_step)
-        #Exploration vs Exploitation
-        if ep_step == 0:
-            # print("  WHT player-Random action selected!!")
-            p1_action = np.random.randint(0,n_ticks*n_ticks)
-            while abs(state[0][p1_action]) > 0:
-                p1_action = np.random.randint(0,n_ticks*n_ticks)
-            
-        else:
-            q_value = self.model.predict(state)
-            
-            nonzero_chkr_brd = state > 0
-            q_value = ~nonzero_chkr_brd * q_value
-            p1_action = np.argmax(q_value[0])
-        return p1_action
+    def get_action(self, state):
+        
+        q_value = self.model.predict(state)
+        nonzero_chkr_brd = state > 0
+        q_value = ~nonzero_chkr_brd * q_value
+        p2_action = np.argmax(q_value[0])
+        return p2_action
 
     # save sample <s,a,r,s'> to the replay memory
     def append_sample(self, state, action, reward, next_state, done):
@@ -154,6 +357,7 @@ def main():
     
     agent_p1 = DQN_p1(state_size, action_size)
     agent_p2 = DoubleDQN_p2(state_size, action_size)
+    game = Gomoku()
     
     agent_p1.model.load_weights(model_path + "/model_p1.h5")
     agent_p2.model.load_weights(model_path + "/model_p2.h5")
@@ -165,254 +369,58 @@ def main():
     agent_p1.episode = 0
     ep_step = 0
     
-    BLK_prev_reward = 0
-    WHT_prev_reward = 0
-    
     while agent_p1.episode < 20:
-    # while time.time() - start_time < 110*60:
+       
+        # reset environment
+        checker_board = game.reset_env()
         
-        done_p1 = False
-        done_p2 = False
+        p1_done = False
+        p2_done = False
         ep_step = 0
         
-        # reset environment
-        checker_board = np.zeros(size_chkr_brd, dtype=int)
-        plt_ck_brd = np.zeros((n_ticks,n_ticks))
-        
-        while not done_p1 and ep_step < size_chkr_brd:
+        while not p1_done and ep_step < size_chkr_brd:
             
             p1_state = copy.deepcopy(checker_board)
+            
             p1_state = np.reshape(p1_state, [1, state_size])
+            
             p1_action = agent_p1.get_action(p1_state, ep_step)
             
             ep_step += 1
             
             # Calculate next_state, reward, done
-            # next_state, reward, done, _ = env.step(action)
-            checker_board[p1_action] = 2
             
-            p1_next_state = copy.deepcopy(checker_board)
+            p1_next_state, p1_reward, p1_done = game.p1_frame_step(p1_action, ep_step)
+            plt_ck_brd = np.reshape(p1_next_state, (-1, n_ticks))
             p1_next_state = np.reshape(p1_next_state, [1, state_size])
             
-            share_v,remainder_v = divmod(p1_action,n_ticks)
-            plt_ck_brd[share_v][remainder_v] = 2
+            agent_p1.append_sample(p1_state, p1_action, p1_reward, p1_next_state, p1_done)
             
-            if ep_step == 1:
-                print(plt_ck_brd.astype(int))
-            
-            # check the number of 5 stones
-            BLK_stn_5 = 0
-            BLK_patt_5 = np.array([2,2,2,2,2])
-            BLK_stn_4 = 0
-            BLK_patt_4 = np.array([2,2,2,2])
-            BLK_stn_3 = 0
-            BLK_patt_3 = np.array([2,2,2])
-
-            for row_idx in range(n_ticks):
-                arr_x = np.array(plt_ck_brd[row_idx])
-                done_num_5 = sum(1 for k in 
-                          [arr_x[j:j+len(BLK_patt_5)] for j in range(len(arr_x) - len(BLK_patt_5) + 1)]
-                          if np.array_equal(k, BLK_patt_5))
-                BLK_stn_5 += done_num_5
-
-                done_num_4 = sum(1 for k in 
-                          [arr_x[j:j+len(BLK_patt_4)] for j in range(len(arr_x) - len(BLK_patt_4) + 1)]
-                          if np.array_equal(k, BLK_patt_4))
-                BLK_stn_4 += done_num_4
-
-                done_num_3 = sum(1 for k in 
-                          [arr_x[j:j+len(BLK_patt_3)] for j in range(len(arr_x) - len(BLK_patt_3) + 1)]
-                          if np.array_equal(k, BLK_patt_3))
-                BLK_stn_3 += done_num_3
-
-            tp_plt_ck_brd = np.transpose(plt_ck_brd)
-            for col_idx in range(n_ticks):
-                arr_x = np.array(tp_plt_ck_brd[col_idx])
-                done_num_5 = sum(1 for k in 
-                          [arr_x[j:j+len(BLK_patt_5)] for j in range(len(arr_x) - len(BLK_patt_5) + 1)]
-                          if np.array_equal(k, BLK_patt_5))
-                BLK_stn_5 += done_num_5 
-
-                done_num_4 = sum(1 for k in 
-                          [arr_x[j:j+len(BLK_patt_4)] for j in range(len(arr_x) - len(BLK_patt_4) + 1)]
-                          if np.array_equal(k, BLK_patt_4))
-                BLK_stn_4 += done_num_4
-
-                done_num_3 = sum(1 for k in 
-                          [arr_x[j:j+len(BLK_patt_3)] for j in range(len(arr_x) - len(BLK_patt_3) + 1)]
-                          if np.array_equal(k, BLK_patt_3))
-                BLK_stn_3 += done_num_3
-
-            dia_idx = -8
-            while dia_idx < 9:
-                arr_x = np.diag(plt_ck_brd, k=dia_idx)
-                done_num_5 = sum(1 for k in 
-                          [arr_x[j:j+len(BLK_patt_5)] for j in range(len(arr_x) - len(BLK_patt_5) + 1)]
-                          if np.array_equal(k, BLK_patt_5))
-                BLK_stn_5 += done_num_5 
-
-                done_num_4 = sum(1 for k in 
-                          [arr_x[j:j+len(BLK_patt_4)] for j in range(len(arr_x) - len(BLK_patt_4) + 1)]
-                          if np.array_equal(k, BLK_patt_4))
-                BLK_stn_4 += done_num_4
-
-                done_num_3 = sum(1 for k in 
-                          [arr_x[j:j+len(BLK_patt_3)] for j in range(len(arr_x) - len(BLK_patt_3) + 1)]
-                          if np.array_equal(k, BLK_patt_3))
-                BLK_stn_3 += done_num_3
-
-                dia_idx += 1
-
-            flip_dia_idx = -8
-            while flip_dia_idx < 9:
-                arr_x = np.fliplr(plt_ck_brd).diagonal(flip_dia_idx)
-                done_num_5 = sum(1 for k in 
-                          [arr_x[j:j+len(BLK_patt_5)] for j in range(len(arr_x) - len(BLK_patt_5) + 1)]
-                          if np.array_equal(k, BLK_patt_5))
-                BLK_stn_5 += done_num_5 
-
-                done_num_4 = sum(1 for k in 
-                          [arr_x[j:j+len(BLK_patt_4)] for j in range(len(arr_x) - len(BLK_patt_4) + 1)]
-                          if np.array_equal(k, BLK_patt_4))
-                BLK_stn_4 += done_num_4
-
-                done_num_3 = sum(1 for k in 
-                          [arr_x[j:j+len(BLK_patt_3)] for j in range(len(arr_x) - len(BLK_patt_3) + 1)]
-                          if np.array_equal(k, BLK_patt_3))
-                BLK_stn_3 += done_num_3
-
-                flip_dia_idx += 1
-
-            if BLK_stn_5 > 0 or ep_step == size_chkr_brd:
-                done_p1 = True
-
-            BLK_ttl_reward = BLK_stn_3*1 + BLK_stn_4*10 + BLK_stn_5*1000
-            p1_reward = 1 + BLK_ttl_reward - BLK_prev_reward
-            BLK_prev_reward = BLK_ttl_reward
-            
-            agent_p1.append_sample(p1_state, p1_action, p1_reward, p1_next_state, done_p1)
-            
-            if done_p1:
+            if p1_done:
                 agent_p1.episode += 1
                 print("   BLK stone win!!")
                 print(plt_ck_brd.astype(int))
                 print("episode :",agent_p1.episode,"BLK mem :",len(agent_p1.memory),"White mem :",len(agent_p2.memory))
                 # break
                 
-            if not done_p1:
-                if len(agent_p2.memory) < agent_p2.size_replay_memory:
-                    agent_p2.progress = "Exploration"
-                else :
-                    agent_p2.progress = "Training"
-
-                p2_state = copy.deepcopy(checker_board)
+            if not p1_done:
+                ep_step += 1
+                
+                p2_state = copy.deepcopy(p1_next_state)
+                
+                plt_ck_brd = np.reshape(p2_state, (-1, n_ticks))
+                # print(plt_ck_brd)
+                
                 p2_state = np.reshape(p2_state, [1, state_size])
-                p2_action = agent_p2.get_action(p2_state, ep_step)
-
-                # Calculate next_state, reward, done
-                # next_state, reward, done, _ = env.step(action)
-                checker_board[p2_action] = 1
-                p2_next_state = copy.deepcopy(checker_board)
+                p2_action = agent_p2.get_action(p2_state)
+                p2_next_state, p2_reward, p2_done, p1_done = game.p2_frame_step(p2_action, ep_step)
+                
+                plt_ck_brd = np.reshape(p2_next_state, (-1, n_ticks))
                 p2_next_state = np.reshape(p2_next_state, [1, state_size])
+            
+                agent_p2.append_sample(p2_state, p2_action, p2_reward, p2_next_state, p2_done)
 
-                share_2,remainder_2 = divmod(p2_action,n_ticks)
-                plt_ck_brd[share_2][remainder_2] = 1
-                
-                WHT_stn_5 = 0
-                WHT_patt_5 = np.array([1,1,1,1,1])
-                WHT_stn_4 = 0
-                WHT_patt_4 = np.array([1,1,1,1])
-                WHT_stn_3 = 0
-                WHT_patt_3 = np.array([1,1,1])
-
-                for row_idx in range(n_ticks):
-                    arr_x = np.array(plt_ck_brd[row_idx])
-                    done_num_5 = sum(1 for k in 
-                              [arr_x[j:j+len(WHT_patt_5)] for j in range(len(arr_x) - len(WHT_patt_5) + 1)]
-                              if np.array_equal(k, WHT_patt_5))
-                    WHT_stn_5 += done_num_5
-
-                    done_num_4 = sum(1 for k in 
-                              [arr_x[j:j+len(WHT_patt_4)] for j in range(len(arr_x) - len(WHT_patt_4) + 1)]
-                              if np.array_equal(k, WHT_patt_4))
-                    WHT_stn_4 += done_num_4
-
-                    done_num_3 = sum(1 for k in 
-                              [arr_x[j:j+len(WHT_patt_3)] for j in range(len(arr_x) - len(WHT_patt_3) + 1)]
-                              if np.array_equal(k, WHT_patt_3))
-                    WHT_stn_3 += done_num_3
-
-                tp_plt_ck_brd = np.transpose(plt_ck_brd)
-                for col_idx in range(n_ticks):
-                    arr_x = np.array(tp_plt_ck_brd[col_idx])
-                    done_num_5 = sum(1 for k in 
-                              [arr_x[j:j+len(WHT_patt_5)] for j in range(len(arr_x) - len(WHT_patt_5) + 1)]
-                              if np.array_equal(k, WHT_patt_5))
-                    WHT_stn_5 += done_num_5 
-
-                    done_num_4 = sum(1 for k in 
-                              [arr_x[j:j+len(WHT_patt_4)] for j in range(len(arr_x) - len(WHT_patt_4) + 1)]
-                              if np.array_equal(k, WHT_patt_4))
-                    WHT_stn_4 += done_num_4
-
-                    done_num_3 = sum(1 for k in 
-                              [arr_x[j:j+len(WHT_patt_3)] for j in range(len(arr_x) - len(WHT_patt_3) + 1)]
-                              if np.array_equal(k, WHT_patt_3))
-                    WHT_stn_3 += done_num_3
-
-                dia_idx = -8
-                while dia_idx < 9:
-                    arr_x = np.diag(plt_ck_brd, k=dia_idx)
-                    done_num_5 = sum(1 for k in 
-                              [arr_x[j:j+len(WHT_patt_5)] for j in range(len(arr_x) - len(WHT_patt_5) + 1)]
-                              if np.array_equal(k, WHT_patt_5))
-                    WHT_stn_5 += done_num_5 
-
-                    done_num_4 = sum(1 for k in 
-                              [arr_x[j:j+len(WHT_patt_4)] for j in range(len(arr_x) - len(WHT_patt_4) + 1)]
-                              if np.array_equal(k, WHT_patt_4))
-                    WHT_stn_4 += done_num_4
-
-                    done_num_3 = sum(1 for k in 
-                              [arr_x[j:j+len(WHT_patt_3)] for j in range(len(arr_x) - len(WHT_patt_3) + 1)]
-                              if np.array_equal(k, WHT_patt_3))
-                    WHT_stn_3 += done_num_3
-
-                    dia_idx += 1
-
-                flip_dia_idx = -8
-                while flip_dia_idx < 9:
-                    arr_x = np.fliplr(plt_ck_brd).diagonal(flip_dia_idx)
-                    done_num_5 = sum(1 for k in 
-                              [arr_x[j:j+len(WHT_patt_5)] for j in range(len(arr_x) - len(WHT_patt_5) + 1)]
-                              if np.array_equal(k, WHT_patt_5))
-                    WHT_stn_5 += done_num_5 
-
-                    done_num_4 = sum(1 for k in 
-                              [arr_x[j:j+len(WHT_patt_4)] for j in range(len(arr_x) - len(WHT_patt_4) + 1)]
-                              if np.array_equal(k, WHT_patt_4))
-                    WHT_stn_4 += done_num_4
-
-                    done_num_3 = sum(1 for k in 
-                              [arr_x[j:j+len(WHT_patt_3)] for j in range(len(arr_x) - len(WHT_patt_3) + 1)]
-                              if np.array_equal(k, WHT_patt_3))
-                    WHT_stn_3 += done_num_3
-
-                    flip_dia_idx += 1
-
-                if WHT_stn_5 > 0 :
-                    done_p2 = True
-                    done_p1 = True
-
-                WHT_ttl_reward = WHT_stn_3*1 + WHT_stn_4*10 + WHT_stn_5*1000
-                
-                p2_reward = 1 + WHT_ttl_reward - WHT_prev_reward
-                WHT_prev_reward = WHT_ttl_reward
-
-                agent_p2.append_sample(p2_state, p2_action, p2_reward, p2_next_state, done_p2)
-                
-                if done_p2:
-                    # return# copy q_net --> target_net
+                if p2_done:
                     agent_p1.episode += 1
                     print("   WHT stone win!!")
                     print(plt_ck_brd.astype(int))
